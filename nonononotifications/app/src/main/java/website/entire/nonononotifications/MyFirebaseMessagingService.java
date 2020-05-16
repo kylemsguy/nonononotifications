@@ -1,4 +1,4 @@
-/**
+package website.entire.nonononotifications; /**
  * Copyright 2016 Google Inc. All Rights Reserved.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package website.entire.nonononotifications;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -32,6 +30,10 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+
+import website.entire.nonononotifications.MainActivity;
+import website.entire.nonononotifications.MyWorker;
+import website.entire.nonononotifications.R;
 
 /**
  * NOTE: There can only be one service in each app that receives FCM messages. If multiple
