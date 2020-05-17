@@ -19,6 +19,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
@@ -33,16 +35,15 @@ import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
-import androidx.work.WorkManager;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 /**
@@ -88,28 +89,66 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
+        String title = null;
+        String message = null;
+        String iconUrl = null;
+        Bitmap largeIcon = null;
+        String uid = null;
+
         // Check if message contains a data payload.
-        if (remoteMessage.getData().size() > 0) {
+        Map<String, String> chatMetaData = remoteMessage.getData();
+        if (chatMetaData.size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+            uid = chatMetaData.get("uid");
+            title = chatMetaData.get("title");
+            message = chatMetaData.get("body");
+            iconUrl = chatMetaData.get("image");
         }
+
+        // TODO: Update database with new chatmetadata
 
         // Check if message contains a notification payload.
         RemoteMessage.Notification notif = remoteMessage.getNotification();
         if (notif != null) {
             Log.d(TAG, "Message Notification Body: " + notif.getBody());
 
-            String title = notif.getTitle();
-            String message = notif.getBody();
-
+            title = notif.getTitle();
+            message = notif.getBody();
             if (notif.getImageUrl() != null) {
-                new DownloadImageTask().doInBackground(title, message, notif.getImageUrl().toString());
-            } else {
-                sendNotification(title, message, null);
+                iconUrl = notif.getImageUrl().toString();
             }
         }
 
+        if (iconUrl != null) {
+            // Download the image
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(iconUrl)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+//            assert response != null;
+            if (response != null && response.isSuccessful()) {
+                try {
+                    InputStream inputStream = response.body().byteStream();
+                    largeIcon = BitmapFactory.decodeStream(inputStream);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+        sendNotification(title, message, largeIcon, uid);
+
 
     }
     // [END receive_message]
@@ -134,27 +173,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // [END on_new_token]
 
     /**
-     * Schedule async work using WorkManager.
-     */
-    private void scheduleJob(final String title, final String message, final String imageURL) {
-        // [START dispatch_job]
-        Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build();
-        OneTimeWorkRequest.Builder workBuilder = new OneTimeWorkRequest.Builder(MyWorker.class)
-                .setInputData(data);
-        OneTimeWorkRequest work = workBuilder.build();
-        WorkManager.getInstance().beginWith(work).enqueue();
-
-        // [END dispatch_job]
-    }
-
-    /**
-     * Handle time allotted to BroadcastReceivers.
-     */
-    private void handleNow() {
-        Log.d(TAG, "Short lived task is done.");
-    }
-
-    /**
      * Persist token to third-party servers.
      *
      * Modify this method to associate the user's FCM InstanceID token with any server-side account
@@ -164,7 +182,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
-        // TODO: not needed
+        String endpoint = "/devicetoken";
+        String body = "{\"token\": \"" + token + "\"}";
     }
 
     /**
@@ -172,17 +191,26 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String title, String messageBody, Bitmap largeIcon) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    private void sendNotification(String title, String messageBody, Bitmap largeIcon, String uid) {
+        Intent intent = null;
+//        Log.d("whatever", uid);
+//        if (uid == null) {
+//            intent = new Intent(this, MainActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        } else {
+//            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://messaging/" + uid));
+//        }
+        intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb-messenger://user/" + uid));
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+                PendingIntent.FLAG_ONE_SHOT); // default was FLAG_ONE_SHOT FLAG_CANCEL_CURRENT
 
         String channelId = getString(R.string.default_notification_channel_id);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_stat_ic_notification)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody))
                         .setContentTitle(title)
                         .setContentText(messageBody)
                         .setAutoCancel(true)
@@ -198,27 +226,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,
-                    "Channel human readable title",
+                    "Main Channel",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            String title = strings[0];
-            String message = strings[1];
-            String url = strings[2];
-            // TODO Download the image
-
-            Bitmap largeIcon = null;
-            sendNotification(title, message, largeIcon);
-            return null;
-        }
-    }
-
 }
