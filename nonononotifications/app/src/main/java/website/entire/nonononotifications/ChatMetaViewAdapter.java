@@ -118,7 +118,7 @@ public class ChatMetaViewAdapter extends RecyclerView.Adapter<ChatMetaViewAdapte
             ChatMetaData element = mDataset.get(position);
             holder.uid = element.uid;
             holder.fullName.setText(element.fullName);
-            long time = (System.currentTimeMillis() - Long.parseLong(element.timestamp)) / 1000 / 60;
+            long time = (System.currentTimeMillis() - element.timestamp) / 1000 / 60;
             holder.timeIgnored.setText("Time Since Last ignored: " + time + "min");
             holder.snarkyComment.setText(element.body);
             Bitmap img = BitmapFactory.decodeFile(element.imageUri);

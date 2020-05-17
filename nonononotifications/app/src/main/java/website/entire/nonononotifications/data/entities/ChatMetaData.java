@@ -11,7 +11,7 @@ public class ChatMetaData {
     public long uid;
 
     @ColumnInfo(name = "timestamp")
-    public String timestamp;
+    public long timestamp;
 
     @ColumnInfo(name = "full_name")
     public String fullName;

@@ -23,7 +23,7 @@ public abstract class ChatMetaDataDao {
     @Query("SELECT * FROM chat_metadata")
     public abstract LiveData<List<ChatMetaData>> getAll();
 
-    @Query("SELECT * FROM chat_metadata WHERE uid IN (:ids)")
+    @Query("SELECT * FROM chat_metadata WHERE uid IN (:ids) ORDER BY timestamp DESC")
     public abstract LiveData<List<ChatMetaData>> loadAllByIds(long[] ids);
 
     @Insert

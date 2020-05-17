@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        logFirebaseInstanceId();
 //        testButton = findViewById(R.id.testButton);
 //        testButton.setOnClickListener(new View.OnClickListener() {
 //            @Override

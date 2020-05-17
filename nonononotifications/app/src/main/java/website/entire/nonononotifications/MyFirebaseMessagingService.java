@@ -162,7 +162,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             ChatMetaData meta = new ChatMetaData();
             meta.uid = Long.parseLong(uid);
             meta.fullName = fullName;
-            meta.timestamp = timestamp;
+            if (timestamp == null) {
+                // TODO do this in a more sane way
+                timestamp = "0";
+            }
+            meta.timestamp = Long.parseLong(timestamp);
             meta.title = title;
             meta.body = message;
             if (largeIcon != null) {
