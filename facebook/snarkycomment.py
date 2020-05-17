@@ -1,9 +1,9 @@
 import random
 
 templates = [
-"I'm sure {name} is just super busy right now... And also for the last {hours:d} hours.",
-"You have zero new messages U+1F60A"
-"Sorry but {name} is busy right now. Please leave a message!"
+    "I'm sure {name} is just super busy right now... And also for the last {hours:d} hour(s).",
+    "You have zero new messages 😊",  # U+1F60A
+    "Sorry but {name} is busy right now. Please leave a message!"
 ]
 
 
