@@ -44,6 +44,13 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 /**
  * NOTE: There can only be one service in each app that receives FCM messages. If multiple
@@ -215,7 +222,30 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             String url = strings[2];
             // TODO Download the image
 
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            assert response != null;
             Bitmap largeIcon = null;
+            if (response.isSuccessful()) {
+                try {
+                    InputStream inputStream = response.body().byteStream();
+                    largeIcon = BitmapFactory.decodeStream(inputStream);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
             sendNotification(title, message, largeIcon);
             return null;
         }
