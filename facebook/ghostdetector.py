@@ -14,7 +14,7 @@ servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = "eorJJx3yTFCJ56sUnj2F46:APA91bHVMazbHvGlsWUseHZvuLGWnhZNZgdJPpCXLcn2Ll8bGuCT-kK4OEyyeuXNbYPGx_eYUopcx7vt0mR-NB1qeNWPuCpp5hOK0-i17CRVqaIP-5ZC87R9XDxxsOsf1emXFho1e5Kt"
+device_token = "fYs-FEUWRGypQO6GpnaPp2:APA91bFmEYwLxmHFmt0YjopEUo4lXa6xM3_t-lAWSaNN2pnAlLn4q4VNhKI-J6DqfdnFv5g-QX5lac0Wkny9yPrtrXHLs7TNB5v-eSlkGyRZr16j6Y_3gEEBRxRoxfAETpy5lX19EAA5"
 
 def set_device_token(token):
     device_token = token
@@ -46,6 +46,8 @@ def get_result():
             if message.author != clientuid:
                 continue
 
+            is_read = message.is_read
+
             sent_time = datetime.fromtimestamp(int(message.timestamp) // 1000)
             now = datetime.now()
 
@@ -60,6 +62,7 @@ def get_result():
                     aList.append({'hours_passed': difference.total_seconds() / 3600,
                                 'uid': thread.uid,
                                 'timestamp': thread.last_message_timestamp,
+                                'is_read': is_read,
                                 'first_name': thread.first_name,
                                 'full_name': thread.name,
                                 'img': thread.photo})
@@ -71,11 +74,13 @@ def send_notifications():
         return
     index = random.randint(0, len(result)-1)
     message = result[index]
-    
+
     # for message in result:
 
     # print(message)
     comment = snarky.get_comment(message)
+    title = snarky.get_title(message)
+    print(title)
     print(comment)
 
     body = {
@@ -84,7 +89,7 @@ def send_notifications():
             'timestamp': message['timestamp'],
             'first_name': message['first_name'],
             'full_name': message['full_name'],
-            'title': "We're here for you",
+            'title': title,
             'body': comment,
             'image': message['img']
         },
