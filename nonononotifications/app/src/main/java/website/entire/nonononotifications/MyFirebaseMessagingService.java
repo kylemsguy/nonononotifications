@@ -23,8 +23,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
@@ -32,6 +34,8 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -98,7 +102,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             String message = notif.getBody();
 
             if (notif.getImageUrl() != null) {
-                scheduleJob(title, message, notif.getImageUrl().toString());
+                new DownloadImageTask().doInBackground(title, message, notif.getImageUrl().toString());
             } else {
                 sendNotification(title, message, null);
             }
@@ -132,28 +136,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule async work using WorkManager.
      */
-    private void scheduleJob(String title, String message, final String imageURL) {
+    private void scheduleJob(final String title, final String message, final String imageURL) {
         // [START dispatch_job]
         Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build();
         OneTimeWorkRequest.Builder workBuilder = new OneTimeWorkRequest.Builder(MyWorker.class)
                 .setInputData(data);
         OneTimeWorkRequest work = workBuilder.build();
         WorkManager.getInstance().beginWith(work).enqueue();
-        WorkManager.getInstance().getWorkInfoByIdLiveData(work.getId())
-                .observe(lifecycleOwner, new Observer<WorkInfo>() {
-                    @Override
-                    public void onChanged(@Nullable WorkInfo workInfo) {
-                        if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
-                            Data data = workInfo.getOutputData();
-                            byte[] imgByteData = data.getByteArray(MyWorker.IMG_DATA_KEY);
-                            Bitmap largeIcon = null;
-                            if (imgByteData != null){
-                                largeIcon = BitmapFactory.decodeByteArray(imgByteData, 0, imgByteData.length);
-                            }
-                            sendNotification(title, message, largeIcon);
-                        }
-                    }
-                });
 
         // [END dispatch_job]
     }
@@ -216,4 +205,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            String title = strings[0];
+            String message = strings[1];
+            String url = strings[2];
+            // TODO Download the image
+
+            Bitmap largeIcon = null;
+            sendNotification(title, message, largeIcon);
+            return null;
+        }
+    }
+
 }
