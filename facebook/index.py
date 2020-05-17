@@ -1,5 +1,5 @@
 from flask import Flask, send_file, request, jsonify
-import facebook.onreaddetector as fb
+import ghostdetector as fb
 
 app = Flask(__name__)
 
