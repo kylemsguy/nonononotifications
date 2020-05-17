@@ -29,16 +29,16 @@ def get_result():
             difference = now - sent_time
 
             # Greater than 3 is definitely ghosting XP
-            hours = 3
+            hours = 1
             if difference.total_seconds() > 3600 * hours:
                 if difference.days < 1 and now.hour < 11:
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
-                    aList.append({'time_sent': sent_time, 'img': thread.avatar})
+                    aList.append({'time_sent': sent_time, 'img': thread.photo})
 
     return aList
 
 client = setup()
 
-get_result()
+print(get_result())
