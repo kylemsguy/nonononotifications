@@ -5,6 +5,7 @@ import snarkycomment as snarky
 
 import requests
 import json
+import random
 
 # Customization
 MIN_HOURS = 1
@@ -65,39 +66,45 @@ def get_result():
     return aList
 
 def send_notifications():
-    for message in result:
-        # print(message)
-        print(snarky.get_comment(message))
+    index = random.randint(0, len(result)-1)
+    message = result[index]
+    
+    # for message in result:
 
-        body = {
-            'data':{
-                'uid': message['uid'],
-                'timestamp': message['timestamp'],
-                'first_name': message['name'],
-            },
-            'notification': {
-                                'title': "We're here for you",
-                                'body': snarky.get_comment(message),
-                                'image': message['img']
-                            }
-            ,
-            'project_id': "nononotifications-deaf0",
-            'to': device_token,
-            'priority': 'high',
-        }
+    # print(message)
+    print(snarky.get_comment(message))
 
-        response = requests.post("https://fcm.googleapis.com/fcm/send",
-                                headers = headers, data=json.dumps(body))
-        print(response)
+    body = {
+        'data':{
+            'uid': message['uid'],
+            'timestamp': message['timestamp'],
+            'first_name': message['name'],
+        },
+        'notification': {
+                            'title': "We're here for you",
+                            'body': snarky.get_comment(message),
+                            'image': message['img']
+                        }
+        ,
+        'project_id': "nononotifications-deaf0",
+        'to': device_token,
+        'priority': 'high',
+    }
 
-client = setup()
-clientuid = client.uid
+    response = requests.post("https://fcm.googleapis.com/fcm/send",
+                            headers = headers, data=json.dumps(body))
+    print(response)
 
-result = get_result()
 
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'key=' + server_token,
-}
+if __name__ == "__main__":
+    client = setup()
+    clientuid = client.uid
 
-send_notifications()
+    result = get_result()
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'key=' + server_token,
+    }
+
+    send_notifications()
