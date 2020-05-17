@@ -14,7 +14,11 @@ servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = 'f9fGoaGXRw6aYK08PYyYZO:APA91bHqde6LheXpbYALxgPBv89HxrfgSYMDAAdGKeKMJkPeXpasa9aEaSQjDbpikd6zjCFiOSzK3I3IuFtyHj3GJQ0nmMZ5IDhWKCz0GPz29mDnqKs5M3XKI9PtMDPK8DxVHYqIqDNu'
+
+devicetokenpath = "ignoreme/devicetoken.txt"
+device_token = ""
+with open(devicetokenpath) as f:
+    device_token = f.read().splitlines()[0]
 
 def set_device_token(token):
     device_token = token
@@ -46,6 +50,8 @@ def get_result():
             if message.author != clientuid:
                 continue
 
+            is_read = message.is_read
+
             sent_time = datetime.fromtimestamp(int(message.timestamp) // 1000)
             now = datetime.now()
 
@@ -60,6 +66,7 @@ def get_result():
                     aList.append({'hours_passed': difference.total_seconds() / 3600,
                                 'uid': thread.uid,
                                 'timestamp': thread.last_message_timestamp,
+                                'is_read': is_read,
                                 'first_name': thread.first_name,
                                 'full_name': thread.name,
                                 'img': thread.photo})
@@ -71,11 +78,13 @@ def send_notifications():
         return
     index = random.randint(0, len(result)-1)
     message = result[index]
-    
+
     # for message in result:
 
     # print(message)
     comment = snarky.get_comment(message)
+    title = snarky.get_title(message)
+    print(title)
     print(comment)
 
     body = {
@@ -84,15 +93,11 @@ def send_notifications():
             'timestamp': message['timestamp'],
             'first_name': message['first_name'],
             'full_name': message['full_name'],
-            'title': "We're here for you",
+            'title': title,
             'body': comment,
             'image': message['img']
         },
-        # 'notification': {
-        #                     'title': "We're here for you",
-        #                     'body': comment,
-        #                     'image': message['img']
-        #                 },
+        # Don't use notification, since it uses default notifs
         'project_id': "nononotifications-deaf0",
         'to': device_token,
         'priority': 'high',
