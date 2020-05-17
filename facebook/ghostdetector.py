@@ -1,19 +1,20 @@
 from fbchat import Client
 from datetime import datetime, timedelta
 
-import snarkycomment as snarky
+import facebook.snarkycomment as snarky
 
 import requests
 import json
 import random
 
 # Customization
-MIN_HOURS = 1
+MIN_HOURS = 3
 
 servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
+
 devicetokenpath = "ignoreme/devicetoken.txt"
 device_token = ""
 with open(devicetokenpath) as f:
