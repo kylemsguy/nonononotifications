@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 client = None
 
+
 def setup(username='', password=''):
     userpath = 'ignoreme/email.txt'
     passpath = 'ignoreme/password.txt'
@@ -13,6 +14,7 @@ def setup(username='', password=''):
     with open(passpath) as f:
         password = f.read().splitlines()[0]
     return Client(username, password)
+
 
 def get_result():
     global client
@@ -41,6 +43,7 @@ def get_result():
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
-                    aList.append({'time_sent': sent_time, 'img': thread.photo, 'ghosted_time': difference.total_seconds()})
+                    aList.append(
+                        {'time_sent': sent_time, 'img': thread.photo, 'ghosted_time': difference.total_seconds()})
 
     return aList
