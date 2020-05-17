@@ -1,19 +1,20 @@
 from fbchat import Client
 from datetime import datetime, timedelta
 
-import facebook.snarkycomment as snarky
+import snarkycomment as snarky
 
 import requests
 import json
+import random
 
 # Customization
-MIN_HOURS = 3
+MIN_HOURS = 1
 
 servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = 'f9fGoaGXRw6aYK08PYyYZO:APA91bHqde6LheXpbYALxgPBv89HxrfgSYMDAAdGKeKMJkPeXpasa9aEaSQjDbpikd6zjCFiOSzK3I3IuFtyHj3GJQ0nmMZ5IDhWKCz0GPz29mDnqKs5M3XKI9PtMDPK8DxVHYqIqDNu'
+device_token = "eorJJx3yTFCJ56sUnj2F46:APA91bHVMazbHvGlsWUseHZvuLGWnhZNZgdJPpCXLcn2Ll8bGuCT-kK4OEyyeuXNbYPGx_eYUopcx7vt0mR-NB1qeNWPuCpp5hOK0-i17CRVqaIP-5ZC87R9XDxxsOsf1emXFho1e5Kt"
 
 def set_device_token(token):
     device_token = token
@@ -52,7 +53,7 @@ def get_result():
 
             # Greater than 3 is definitely ghosting XP
             if difference.total_seconds() > 3600 * MIN_HOURS:
-                if difference.days < 1 and now.hour < 11:
+                if False and difference.days < 1 and now.hour < 11:
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
@@ -66,39 +67,51 @@ def get_result():
     return aList
 
 def send_notifications():
-    for message in result:
+    if not result:
+        return
+    index = random.randint(0, len(result)-1)
+    message = result[index]
+    
+    # for message in result:
 
-        body = {
-            'data':{
-                'uid': message['uid'],
-                'timestamp': message['timestamp'],
-                'first_name': message['first_name'],
-                'full_name': message['full_name']
-            },
-            'notification': {
-                                'title': snarky.get_title(message),
-                                'body': snarky.get_comment(message),
-                                'image': message['img']
-                            }
-            ,
-            'project_id': "nononotifications-deaf0",
-            'to': device_token,
-            'priority': 'high',
-        }
+    # print(message)
+    comment = snarky.get_comment(message)
+    print(comment)
 
-        print(body)
+    body = {
+        'data':{
+            'uid': message['uid'],
+            'timestamp': message['timestamp'],
+            'first_name': message['first_name'],
+            'full_name': message['full_name'],
+            'title': "We're here for you",
+            'body': comment,
+            'image': message['img']
+        },
+        # 'notification': {
+        #                     'title': "We're here for you",
+        #                     'body': comment,
+        #                     'image': message['img']
+        #                 },
+        'project_id': "nononotifications-deaf0",
+        'to': device_token,
+        'priority': 'high',
+    }
 
-        response = requests.post("https://fcm.googleapis.com/fcm/send",
-                                headers = headers, data=json.dumps(body))
+    response = requests.post("https://fcm.googleapis.com/fcm/send",
+                            headers = headers, data=json.dumps(body))
+    print(response)
 
-client = setup()
-clientuid = client.uid
 
-result = get_result()
+if __name__ == "__main__":
+    client = setup()
+    clientuid = client.uid
 
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'key=' + server_token,
-}
+    result = get_result()
 
-send_notifications()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'key=' + server_token,
+    }
+
+    send_notifications()
