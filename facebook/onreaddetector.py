@@ -1,30 +1,44 @@
 from fbchat import Client
-from fbchat.models import *
+from datetime import datetime, timedelta
 
-userpath = "ignoreme/email.txt"
-passpath = "ignoreme/password.txt"
+userpath = 'ignoreme/email.txt'
+passpath = 'ignoreme/password.txt'
 username = password = ""
 
 with open(userpath) as f:
-    username = f.read().splitlines()[0] #TODO: idk how to do this cleaner
+    username = f.read().splitlines()[0]
 with open(passpath) as f:
     password = f.read().splitlines()[0]
 
 
-# TODO: Look for a thread which you are the last person the send a message
-# Then check if the last message you sent has been read
 
 client = Client(username, password)
 
 users = client.fetchAllUsers()
-print(users)
 
-# threadids = client.searchForThreads()
+# Fetches a list of the 20 top threads you're currently chatting with
+threads = client.fetchThreadList()
 
-# message = Message(text=content)
-# message = Message(text="👍", emoji_size=EmojiSize.LARGE)
-#
-# def sendmessage():
-#     client.send(message, thread_id = userid, thread_type = ThreadType.USER)
-#
-client.logout()
+for thread in threads:
+    messages = client.fetchThreadMessages(thread_id=thread.uid, limit=1)
+    for message in messages:
+        print(message)
+        sent_time = datetime.fromtimestamp(int(message.timestamp)//1000)
+        now = datetime.now()
+
+        print(sent_time.hour)
+        difference = now - sent_time
+
+        # Greater than 3 is definitely ghosting XP
+        hours = 3
+        if difference.total_seconds() > 3600*hours:
+            if difference.days < 1 and now.hour < 11:
+                # You sent it at midnight... You get a pass.
+                pass
+            else:
+                print('ghosted :P')
+                pass
+
+
+if not client.isLoggedIn():
+    client.logout()
