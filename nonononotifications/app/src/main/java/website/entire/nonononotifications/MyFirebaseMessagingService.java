@@ -14,6 +14,7 @@ package website.entire.nonononotifications; /**
  * limitations under the License.
  */
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -31,6 +32,8 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import android.os.VibrationEffect;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -207,6 +210,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         String channelId = getString(R.string.default_notification_channel_id);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        long[] vibrationPattern = {0, 250, 250, 250};
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_stat_ic_notification)
@@ -215,6 +219,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentText(messageBody)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                        .setLights(0, 100, 10)
+                        .setVibrate(vibrationPattern)
                         .setContentIntent(pendingIntent);
         if (largeIcon != null) {
             notificationBuilder.setLargeIcon(largeIcon);
@@ -227,7 +234,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,
                     "Main Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT);
+                    NotificationManager.IMPORTANCE_HIGH);
+            channel.enableLights(true);
+            channel.setShowBadge(true);
+            channel.enableVibration(true);
             notificationManager.createNotificationChannel(channel);
         }
 
