@@ -1,8 +1,20 @@
 from fbchat import Client
 from datetime import datetime, timedelta
 
+import requests
+import json
+
 # Customization
 MIN_HOURS = 1
+
+servertokenpath = "ignoreme/servertoken.txt"
+server_token = ""
+with open(servertokenpath) as f:
+    server_token = f.read().splitlines()[0]
+device_token = ""
+
+def set_device_token(token):
+    device_token = token
 
 def setup(username='', password=''):
     userpath = 'ignoreme/email.txt'
@@ -41,11 +53,29 @@ def get_result():
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
-                    aList.append({'time_sent': sent_time, 'img': thread.photo})
+                    aList.append({'hours_passed': difference.total_seconds() / 3600, 'img': thread.photo})
 
     return aList
 
 client = setup()
 clientuid = client.uid
 
-print(get_result())
+result = get_result()
+
+
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'key=' + server_token,
+}
+
+for message in result:
+    print(message)
+    body = {
+        'notification': message,
+        'to': device_token,
+        'priority': 'high',
+    }
+
+    response = requests.post("https://fcm.googleapis.com/fcm/send",
+                            headers = headers, data=json.dumps(body))
+    print(response.status_code)
