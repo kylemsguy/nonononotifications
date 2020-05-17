@@ -34,16 +34,6 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
-import androidx.work.WorkManager;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -141,27 +131,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // [END on_new_token]
 
     /**
-     * Schedule async work using WorkManager.
-     */
-    private void scheduleJob(final String title, final String message, final String imageURL) {
-        // [START dispatch_job]
-        Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build();
-        OneTimeWorkRequest.Builder workBuilder = new OneTimeWorkRequest.Builder(MyWorker.class)
-                .setInputData(data);
-        OneTimeWorkRequest work = workBuilder.build();
-        WorkManager.getInstance().beginWith(work).enqueue();
-
-        // [END dispatch_job]
-    }
-
-    /**
-     * Handle time allotted to BroadcastReceivers.
-     */
-    private void handleNow() {
-        Log.d(TAG, "Short lived task is done.");
-    }
-
-    /**
      * Persist token to third-party servers.
      *
      * Modify this method to associate the user's FCM InstanceID token with any server-side account
@@ -171,7 +140,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
-        // TODO: not needed
+        String endpoint = "/devicetoken";
+        String body = "{\"token\": \"" + token + "\"}";
     }
 
     /**
