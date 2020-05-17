@@ -14,7 +14,10 @@ servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = "fYs-FEUWRGypQO6GpnaPp2:APA91bFmEYwLxmHFmt0YjopEUo4lXa6xM3_t-lAWSaNN2pnAlLn4q4VNhKI-J6DqfdnFv5g-QX5lac0Wkny9yPrtrXHLs7TNB5v-eSlkGyRZr16j6Y_3gEEBRxRoxfAETpy5lX19EAA5"
+devicetokenpath = "ignoreme/devicetoken.txt"
+device_token = ""
+with open(devicetokenpath) as f:
+    device_token = f.read().splitlines()[0]
 
 def set_device_token(token):
     device_token = token
@@ -93,11 +96,7 @@ def send_notifications():
             'body': comment,
             'image': message['img']
         },
-        # 'notification': {
-        #                     'title': "We're here for you",
-        #                     'body': comment,
-        #                     'image': message['img']
-        #                 },
+        # Don't use notification, since it uses default notifs
         'project_id': "nononotifications-deaf0",
         'to': device_token,
         'priority': 'high',

@@ -7,7 +7,7 @@ templates = [
     "It's been {hours:d} hours since {name} has responded to you, not sure if it's just you though.",
     "Spooky... Is it me or is {name} ghosting you? 👻",
     "I'm sure {name} misses you dearly... after all, they haven't responded to you in {hours:d} hours 😝",
-    "What did you say to {name}? Clearly awkward because {name} hasn't texted you back in {hours:d} hours!",
+    "What did you say to {name}? Clearly something awkward because {name} hasn't texted you back in {hours:d} hours!",
     "Ha Sike! Nobody messaged you! 🤪",
 ]
 
