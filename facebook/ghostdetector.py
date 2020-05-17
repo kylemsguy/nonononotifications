@@ -73,7 +73,8 @@ for message in result:
     body = {
         'notification': {
                             'title': "Test title",
-                            'body': message
+                            'body': message['hours_passed'],
+                            'image': message['img']
                         }
         ,
         'project_id': "nononotifications-deaf0",
