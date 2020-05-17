@@ -19,6 +19,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -40,6 +41,8 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -47,6 +50,8 @@ import java.util.Map;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import website.entire.nonononotifications.data.ChatRepository;
+import website.entire.nonononotifications.data.entities.ChatMetaData;
 
 
 /**
@@ -95,8 +100,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String title = null;
         String message = null;
         String iconUrl = null;
+        String timestamp = null;
         Bitmap largeIcon = null;
         String uid = null;
+        String fullName = null;
 
         // Check if message contains a data payload.
         Map<String, String> chatMetaData = remoteMessage.getData();
@@ -106,6 +113,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             title = chatMetaData.get("title");
             message = chatMetaData.get("body");
             iconUrl = chatMetaData.get("image");
+            timestamp = chatMetaData.get("timestamp");
+            fullName = chatMetaData.get("full_name");
         }
 
         // TODO: Update database with new chatmetadata
@@ -148,6 +157,42 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             }
         }
+
+        if (uid != null) {
+            ChatMetaData meta = new ChatMetaData();
+            meta.uid = Long.parseLong(uid);
+            meta.fullName = fullName;
+            if (timestamp == null) {
+                // TODO do this in a more sane way
+                timestamp = "0";
+            }
+            meta.timestamp = Long.parseLong(timestamp);
+            meta.title = title;
+            meta.body = message;
+            if (largeIcon != null) {
+                ContextWrapper cw = new ContextWrapper(getApplicationContext());
+                File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+                File file = new File(directory, uid + ".jpg");
+                FileOutputStream fos = null;
+                try{
+                    fos = new FileOutputStream(file);
+                    largeIcon.compress(Bitmap.CompressFormat.PNG, 95, fos);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                meta.imageUri = file.getAbsolutePath();
+            }
+
+            ChatRepository repo = new ChatRepository(getApplication());
+            repo.insertChat(meta);
+        }
+
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
         sendNotification(title, message, largeIcon, uid);
