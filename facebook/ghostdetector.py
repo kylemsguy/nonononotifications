@@ -34,26 +34,26 @@ def get_result():
     aList = []
 
     for thread in threads:
-        messages = client.fetchThreadMessages(thread_id=thread.uid, limit=1)
-        for message in messages:
-            # print(message)
+        messages = client.fetchThreadMessages(thread_id=thread.uid, limit=2)
+        message_thing = messages[0]
+        # I have no idea what happens if there are less than 2 messages, assume not :P
 
-            # You ghosted them!
-            if message.author != clientuid:
-                continue
+        # You ghosted them!
+        if message_thing.author != clientuid:
+            continue
 
-            sent_time = datetime.fromtimestamp(int(message.timestamp) // 1000)
-            now = datetime.now()
+        sent_time = datetime.fromtimestamp(int(message_thing.timestamp) // 1000)
+        now = datetime.now()
 
-            difference = now - sent_time
+        difference = now - sent_time
 
-            # Greater than 3 is definitely ghosting XP
-            if difference.total_seconds() > 3600 * MIN_HOURS:
-                if difference.days < 1 and now.hour < 11:
-                    # You sent it at midnight... You get a pass.
-                    pass
-                else:
-                    aList.append({'hours_passed': difference.total_seconds() / 3600, 'img': thread.photo})
+        # Greater than 3 is definitely ghosting XP
+        if difference.total_seconds() > 3600 * MIN_HOURS:
+            if difference.days < 1 and now.hour < 11:
+                # You sent it at midnight... You get a pass.
+                pass
+            else:
+                aList.append({'hours_passed': difference.total_seconds() / 3600, 'img': thread.photo})
 
     return aList
 
@@ -61,7 +61,6 @@ client = setup()
 clientuid = client.uid
 
 result = get_result()
-
 
 headers = {
     'Content-Type': 'application/json',
