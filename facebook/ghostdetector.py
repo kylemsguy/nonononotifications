@@ -14,7 +14,7 @@ servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = "dApTE--3R7C9XQMsY0QePz:APA91bGE9x1XS5mi0ZslYQ42cqzuoN76h5o1r2zq2_BcrYQfXaeyuH5XDI6_rkMdPCI4pdbbse8LNwGVE7V5mgiKtZg8Xe_Akouv_Lhz-4XjmPSTrcPgS6He7fQAihrPR5NzbRrRIAuw"
+device_token = "dQqIzTzaTZK3kyfLsjsTMs:APA91bEE4LOhhYfJ4U3mqYzXW2TFG2ebXh2VSjQWIJIjyDe_Ja1CckCfTAi5_cP8XynmxNf6OaAY_-I9W3ouTS5mwwXJdA7gxLAdnyCzpBOSJ6kDMG1V5bXUS6ic4PhCeEV-v9cYfDlx"
 
 def set_device_token(token):
     device_token = token
@@ -53,7 +53,7 @@ def get_result():
 
             # Greater than 3 is definitely ghosting XP
             if difference.total_seconds() > 3600 * MIN_HOURS:
-                if difference.days < 1 and now.hour < 11:
+                if False and difference.days < 1 and now.hour < 11:
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
@@ -66,26 +66,31 @@ def get_result():
     return aList
 
 def send_notifications():
+    if not result:
+        return
     index = random.randint(0, len(result)-1)
     message = result[index]
     
     # for message in result:
 
     # print(message)
-    print(snarky.get_comment(message))
+    comment = snarky.get_comment(message)
+    print(comment)
 
     body = {
         'data':{
             'uid': message['uid'],
             'timestamp': message['timestamp'],
             'first_name': message['name'],
+            'title': "We're here for you",
+            'body': comment,
+            'image': message['img']
         },
-        'notification': {
-                            'title': "We're here for you",
-                            'body': snarky.get_comment(message),
-                            'image': message['img']
-                        }
-        ,
+        # 'notification': {
+        #                     'title': "We're here for you",
+        #                     'body': comment,
+        #                     'image': message['img']
+        #                 },
         'project_id': "nononotifications-deaf0",
         'to': device_token,
         'priority': 'high',
