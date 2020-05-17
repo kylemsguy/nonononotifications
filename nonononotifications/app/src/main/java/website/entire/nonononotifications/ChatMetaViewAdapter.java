@@ -2,12 +2,15 @@ package website.entire.nonononotifications;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,14 +67,8 @@ public class ChatMetaViewAdapter extends RecyclerView.Adapter<ChatMetaViewAdapte
 
         @Override
         public void onClick(View view){
-//            Vibrator v = (Vibrator) view.getContext().getSystemService(Context.VIBRATOR_SERVICE);
-//            int vibrationLength = 200;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                v.vibrate(VibrationEffect.createOneShot(vibrationLength, VibrationEffect.DEFAULT_AMPLITUDE));
-//            } else {
-//                //deprecated in API 26
-//                v.vibrate(vibrationLength);
-//            }
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb-messenger://user/" + uid));
+            activity.startActivity(intent);
         }
 
         @Override
@@ -84,6 +81,7 @@ public class ChatMetaViewAdapter extends RecyclerView.Adapter<ChatMetaViewAdapte
                 //deprecated in API 26
                 v.vibrate(vibrationLength);
             }
+            Log.d("ChatMetaViewAdapter", "UID of long press: " + uid);
             return true;
         }
     }

@@ -11,11 +11,11 @@ import java.util.List;
 import website.entire.nonononotifications.data.ChatRepository;
 import website.entire.nonononotifications.data.entities.ChatMetaData;
 
-public class ChatMeatViewModel extends AndroidViewModel {
+public class ChatMetaViewModel extends AndroidViewModel {
     private ChatRepository repository;
     private LiveData<List<ChatMetaData>> metas;
 
-    public ChatMeatViewModel(Application application) {
+    public ChatMetaViewModel(Application application) {
         super(application);
         repository = new ChatRepository(application);
         metas = repository.getAllMeta();

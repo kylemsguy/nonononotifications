@@ -2,16 +2,16 @@ package website.entire.nonononotifications;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private List<ChatMetaData> myDataset;
 
+    private ChatMetaViewModel viewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +54,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         myDataset = new ArrayList<>();
         mAdapter = new ChatMetaViewAdapter(myDataset, this, rootView);
+        recyclerView.setAdapter(mAdapter);
+
+        viewModel = ViewModelProviders.of(this).get(ChatMetaViewModel.class);
+        viewModel.getMetas().observe(this, new Observer<List<ChatMetaData>>() {
+                    @Override
+                    public void onChanged(List<ChatMetaData> chatMetaData) {
+                        mAdapter.setData(chatMetaData);
+                    }
+                }
+        );
 
         testTextView = findViewById(R.id.textView);
     }
