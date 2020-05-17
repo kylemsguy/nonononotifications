@@ -13,8 +13,8 @@ public class ChatMetaData {
     @ColumnInfo(name = "timestamp")
     public String timestamp;
 
-    @ColumnInfo(name = "first_name")
-    public String first_name;
+    @ColumnInfo(name = "full_name")
+    public String fullName;
 
     @ColumnInfo(name = "title")
     public String title;

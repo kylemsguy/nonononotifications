@@ -103,6 +103,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String timestamp = null;
         Bitmap largeIcon = null;
         String uid = null;
+        String fullName = null;
 
         // Check if message contains a data payload.
         Map<String, String> chatMetaData = remoteMessage.getData();
@@ -113,6 +114,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             message = chatMetaData.get("body");
             iconUrl = chatMetaData.get("image");
             timestamp = chatMetaData.get("timestamp");
+            fullName = chatMetaData.get("full_name");
         }
 
         // TODO: Update database with new chatmetadata
@@ -159,6 +161,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (uid != null) {
             ChatMetaData meta = new ChatMetaData();
             meta.uid = Long.parseLong(uid);
+            meta.fullName = fullName;
             meta.timestamp = timestamp;
             meta.title = title;
             meta.body = message;
