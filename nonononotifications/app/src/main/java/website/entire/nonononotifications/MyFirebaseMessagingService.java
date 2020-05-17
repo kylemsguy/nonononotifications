@@ -19,22 +19,27 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import androidx.lifecycle.Observer;
+import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
-import website.entire.nonononotifications.MainActivity;
-import website.entire.nonononotifications.MyWorker;
-import website.entire.nonononotifications.R;
 
 /**
  * NOTE: There can only be one service in each app that receives FCM messages. If multiple
@@ -82,18 +87,26 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            scheduleJob();
-
         }
 
         // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+        RemoteMessage.Notification notif = remoteMessage.getNotification();
+        if (notif != null) {
+            Log.d(TAG, "Message Notification Body: " + notif.getBody());
+
+            String title = notif.getTitle();
+            String message = notif.getBody();
+
+            if (notif.getImageUrl() != null) {
+                scheduleJob(title, message, notif.getImageUrl().toString());
+            } else {
+                sendNotification(title, message, null);
+            }
         }
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
-        sendNotification(remoteMessage.getNotification().getBody());
+
     }
     // [END receive_message]
 
@@ -119,13 +132,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule async work using WorkManager.
      */
-    private void scheduleJob(String imageURL) {
+    private void scheduleJob(String title, String message, final String imageURL) {
         // [START dispatch_job]
-        Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build()
+        Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build();
         OneTimeWorkRequest.Builder workBuilder = new OneTimeWorkRequest.Builder(MyWorker.class)
                 .setInputData(data);
         OneTimeWorkRequest work = workBuilder.build();
         WorkManager.getInstance().beginWith(work).enqueue();
+        WorkManager.getInstance().getWorkInfoByIdLiveData(work.getId())
+                .observe(lifecycleOwner, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(@Nullable WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
+                            Data data = workInfo.getOutputData();
+                            byte[] imgByteData = data.getByteArray(MyWorker.IMG_DATA_KEY);
+                            Bitmap largeIcon = null;
+                            if (imgByteData != null){
+                                largeIcon = BitmapFactory.decodeByteArray(imgByteData, 0, imgByteData.length);
+                            }
+                            sendNotification(title, message, largeIcon);
+                        }
+                    }
+                });
+
         // [END dispatch_job]
     }
 
@@ -146,6 +175,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
+        // TODO: not needed
     }
 
     /**
@@ -153,7 +183,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String title, String messageBody, Bitmap largeIcon) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -164,11 +194,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_stat_ic_notification)
-                        .setContentTitle(getString(R.string.fcm_message))
+                        .setContentTitle(title)
                         .setContentText(messageBody)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
+        if (largeIcon != null) {
+            notificationBuilder.setLargeIcon(largeIcon);
+        }
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
