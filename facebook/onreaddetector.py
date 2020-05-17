@@ -1,6 +1,8 @@
 from fbchat import Client
 from datetime import datetime, timedelta
 
+client = None
+
 def setup(username='', password=''):
     userpath = 'ignoreme/email.txt'
     passpath = 'ignoreme/password.txt'
@@ -13,6 +15,10 @@ def setup(username='', password=''):
     return Client(username, password)
 
 def get_result():
+    global client
+
+    if client == None or not client.isLoggedIn():
+        client = setup()
 
     # Fetches a list of the 20 top threads you're currently chatting with
     threads = client.fetchThreadList()
@@ -35,10 +41,6 @@ def get_result():
                     # You sent it at midnight... You get a pass.
                     pass
                 else:
-                    aList.append({'time_sent': sent_time, 'img': thread.photo})
+                    aList.append({'time_sent': sent_time, 'img': thread.photo, 'ghosted_time': difference.total_seconds()})
 
     return aList
-
-client = setup()
-
-print(get_result())
