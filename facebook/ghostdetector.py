@@ -11,7 +11,7 @@ servertokenpath = "ignoreme/servertoken.txt"
 server_token = ""
 with open(servertokenpath) as f:
     server_token = f.read().splitlines()[0]
-device_token = ""
+device_token = "dApTE--3R7C9XQMsY0QePz:APA91bGE9x1XS5mi0ZslYQ42cqzuoN76h5o1r2zq2_BcrYQfXaeyuH5XDI6_rkMdPCI4pdbbse8LNwGVE7V5mgiKtZg8Xe_Akouv_Lhz-4XjmPSTrcPgS6He7fQAihrPR5NzbRrRIAuw"
 
 def set_device_token(token):
     device_token = token
@@ -70,11 +70,17 @@ headers = {
 for message in result:
     print(message)
     body = {
-        'notification': message,
+        'notification': {
+                            'title': "Test title",
+                            'body': message['hours_passed'],
+                            'image': message['img']
+                        }
+        ,
+        'project_id': "nononotifications-deaf0",
         'to': device_token,
         'priority': 'high',
     }
 
     response = requests.post("https://fcm.googleapis.com/fcm/send",
                             headers = headers, data=json.dumps(body))
-    print(response.status_code)
+    print(response)
