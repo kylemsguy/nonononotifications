@@ -28,6 +28,7 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -118,10 +119,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Schedule async work using WorkManager.
      */
-    private void scheduleJob() {
+    private void scheduleJob(String imageURL) {
         // [START dispatch_job]
+        Data data = new Data.Builder().putString(MyWorker.IMG_URL_KEY, imageURL).build()
         OneTimeWorkRequest.Builder workBuilder = new OneTimeWorkRequest.Builder(MyWorker.class)
-                .setInputData();
+                .setInputData(data);
         OneTimeWorkRequest work = workBuilder.build();
         WorkManager.getInstance().beginWith(work).enqueue();
         // [END dispatch_job]
